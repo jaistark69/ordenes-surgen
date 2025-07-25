@@ -1,0 +1,47 @@
+/* src/index.css */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-image: url('fondo.png'); /* ✅ SIN slash inicial porque está en /public */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+h1 {
+  color: #222;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: #444;
+  margin-top: 30px;
+}
+
+input {
+  padding: 8px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+select {
+  margin-left: 10px;
+  padding: 4px;
+  border-radius: 4px;
+}
