@@ -2,9 +2,17 @@
 import React from 'react';
 
 const BotonWhatsApp = ({ telefono, mensaje }) => {
-  if (!telefono) return null; // No renderiza el botón si no hay teléfono
+  if (!telefono) return null;
 
-  const numero = telefono.startsWith('+') ? telefono.replace('+', '') : telefono;
+  // Forzar que el número tenga prefijo internacional
+  let numero = telefono.toString().trim();
+  if (numero.startsWith('6') || numero.startsWith('7')) {
+    numero = '34' + numero; // Asumimos España si no tiene prefijo
+  }
+  if (numero.startsWith('+')) {
+    numero = numero.slice(1); // Quitamos el "+"
+  }
+
   const mensajeCodificado = encodeURIComponent(mensaje || '');
   const enlace = `https://wa.me/${numero}?text=${mensajeCodificado}`;
 
