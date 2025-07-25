@@ -1,167 +1,144 @@
-import React, { useState, useEffect, useRef } from "react";
-import { db } from "./firebase";
+// src/OrdenesApp.js
+import React, { useState, useEffect, useRef } from 'react';
+import { db } from './firebase';
 import {
   collection,
   addDoc,
   onSnapshot,
   updateDoc,
   doc,
-} from "firebase/firestore";
+} from 'firebase/firestore';
+import BotonWhatsApp from './BotonWhatsApp';
+import FirmaCanvas from './components/FirmaCanvas';
 
 function OrdenesApp({ usuario }) {
   const [ordenes, setOrdenes] = useState([]);
   const [nueva, setNueva] = useState({
-    cliente: "",
-    direccion: "",
-    telefono: "",
-    fecha: "",
-    notas: "",
-    estado: "pendiente",
+    cliente: '',
+    direccion: '',
+    telefono: '',
+    fecha: '',
+    notas: '',
+    estado: 'pendiente',
     firma: false,
   });
-  const [firmandoId, setFirmandoId] = useState(null);
-  const canvasRef = useRef(null);
 
+  const [firmandoId, setFirmandoId] = useState(null);
+
+  // Cargar órdenes en tiempo real
   useEffect(() => {
-    const ref = collection(db, "ordenes");
+    const ref = collection(db, 'ordenes');
     const unsubscribe = onSnapshot(ref, (snapshot) => {
-      const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const datos = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setOrdenes(datos);
     });
     return unsubscribe;
   }, []);
 
+  // Agregar nueva orden
   const agregar = async () => {
     if (!nueva.cliente || !nueva.direccion || !nueva.telefono || !nueva.fecha) {
-      alert("Faltan datos obligatorios");
+      alert('Faltan datos obligatorios');
       return;
     }
-    await addDoc(collection(db, "ordenes"), nueva);
+
+    await addDoc(collection(db, 'ordenes'), nueva);
     setNueva({
-      cliente: "",
-      direccion: "",
-      telefono: "",
-      fecha: "",
-      notas: "",
-      estado: "pendiente",
+      cliente: '',
+      direccion: '',
+      telefono: '',
+      fecha: '',
+      notas: '',
+      estado: 'pendiente',
       firma: false,
     });
   };
 
-  const cambiarEstado = async (id, estado) => {
-    const ref = doc(db, "ordenes", id);
-    await updateDoc(ref, { estado });
-  };
-
-  const iniciarFirma = (id) => {
-    setFirmandoId(id);
-    setTimeout(() => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let pintando = false;
-        const iniciar = () => (pintando = true);
-        const parar = () => (pintando = false);
-        const dibujar = (e) => {
-          if (!pintando) return;
-          const rect = canvas.getBoundingClientRect();
-          const x = e.clientX || e.touches?.[0]?.clientX;
-          const y = e.clientY || e.touches?.[0]?.clientY;
-          ctx.lineTo(x - rect.left, y - rect.top);
-          ctx.stroke();
-        };
-        canvas.addEventListener("mousedown", iniciar);
-        canvas.addEventListener("mouseup", parar);
-        canvas.addEventListener("mousemove", dibujar);
-        canvas.addEventListener("touchstart", iniciar);
-        canvas.addEventListener("touchend", parar);
-        canvas.addEventListener("touchmove", dibujar);
-      }
-    }, 200);
-  };
-
-  const guardarFirma = async () => {
-    const ref = doc(db, "ordenes", firmandoId);
-    await updateDoc(ref, { estado: "completado", firma: true });
-    setFirmandoId(null);
-  };
-
   return (
-    <div style={{ padding: 20, maxWidth: 800, margin: "0 auto" }}>
-      <h1>📋 Órdenes Surgen</h1>
+    <div style={{ padding: '20px', maxWidth: '700px', margin: 'auto' }}>
+      <h2>Gestión de Órdenes - Surgen</h2>
 
-      <input
-        placeholder="Cliente"
-        value={nueva.cliente}
-        onChange={(e) => setNueva({ ...nueva, cliente: e.target.value })}
-      />
-      <input
-        placeholder="Dirección"
-        value={nueva.direccion}
-        onChange={(e) => setNueva({ ...nueva, direccion: e.target.value })}
-      />
-      <input
-        placeholder="Teléfono"
-        value={nueva.telefono}
-        onChange={(e) => setNueva({ ...nueva, telefono: e.target.value })}
-      />
-      <input
-        type="date"
-        value={nueva.fecha}
-        onChange={(e) => setNueva({ ...nueva, fecha: e.target.value })}
-      />
-      <textarea
-        placeholder="Notas internas"
-        value={nueva.notas}
-        onChange={(e) => setNueva({ ...nueva, notas: e.target.value })}
-      />
-      <button onClick={agregar}>Agregar orden</button>
+      {/* Formulario nueva orden */}
+      <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <input
+          type="text"
+          placeholder="Cliente"
+          value={nueva.cliente}
+          onChange={(e) => setNueva({ ...nueva, cliente: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="Dirección"
+          value={nueva.direccion}
+          onChange={(e) => setNueva({ ...nueva, direccion: e.target.value })}
+        />
+        <input
+          type="tel"
+          placeholder="Teléfono"
+          value={nueva.telefono}
+          onChange={(e) => setNueva({ ...nueva, telefono: e.target.value })}
+        />
+        <input
+          type="date"
+          value={nueva.fecha}
+          onChange={(e) => setNueva({ ...nueva, fecha: e.target.value })}
+        />
+        <textarea
+          placeholder="Notas internas"
+          value={nueva.notas}
+          onChange={(e) => setNueva({ ...nueva, notas: e.target.value })}
+        />
+        <button onClick={agregar}>Agregar orden</button>
+      </div>
 
-      <ul>
-        {ordenes.map((o) => (
-          <li key={o.id} style={{ marginTop: 20, background: "#fff", padding: 10, borderRadius: 10 }}>
-            <strong>{o.cliente}</strong> - {o.direccion} - {o.telefono}<br />
-            Fecha: {o.fecha} <br />
-            Notas: {o.notas} <br />
-            Estado: {o.estado} <br />
-            {o.telefono && (
-              <a href={`https://wa.me/${o.telefono.replace(/[^\\d]/g, "")}`} target="_blank" rel="noopener noreferrer">
-                📲 WhatsApp
-              </a>
-            )}
-            <br />
-            {o.estado !== "completado" && !o.firma && (
+      <hr />
+
+      {/* Lista de órdenes */}
+      {ordenes.map((orden) => (
+        <div key={orden.id} style={{ marginBottom: '30px', padding: '15px', border: '1px solid #ccc', borderRadius: '10px' }}>
+          <p><strong>Cliente:</strong> {orden.cliente}</p>
+          <p><strong>Dirección:</strong> {orden.direccion}</p>
+          <p><strong>Teléfono:</strong> {orden.telefono}</p>
+          <p><strong>Fecha:</strong> {orden.fecha}</p>
+          <p><strong>Notas:</strong> {orden.notas}</p>
+          <p><strong>Estado:</strong> {orden.estado}</p>
+
+          {/* Botón de WhatsApp */}
+          <BotonWhatsApp
+            telefono={orden.telefono}
+            mensaje={`Hola ${orden.cliente}, te escribo desde la app Surgen sobre tu cita del ${orden.fecha}`}
+          />
+
+          {/* Firma */}
+          <div style={{ marginTop: '10px' }}>
+            {orden.firma ? (
               <>
-                <select
-                  value={o.estado}
-                  onChange={(e) => cambiarEstado(o.id, e.target.value)}
-                >
-                  <option value="pendiente">Pendiente</option>
-                  <option value="en progreso">En progreso</option>
-                  <option value="completado">Completado</option>
-                </select>
-                <button onClick={() => iniciarFirma(o.id)}>✍️ Firmar</button>
+                <p><strong>Firma guardada:</strong></p>
+                <img src={orden.firma} alt="Firma del cliente" style={{ border: '1px solid #aaa', maxWidth: '100%' }} />
+              </>
+            ) : (
+              <>
+                {firmandoId === orden.id ? (
+                  <FirmaCanvas
+                    onGuardar={async (imagenFirma) => {
+                      await updateDoc(doc(db, 'ordenes', orden.id), {
+                        firma: imagenFirma,
+                        estado: 'firmada',
+                      });
+                      setFirmandoId(null);
+                    }}
+                  />
+                ) : (
+                  <button onClick={() => setFirmandoId(orden.id)}>Firmar orden</button>
+                )}
               </>
             )}
-            {o.firma && <p>✅ Firmado por el cliente</p>}
-          </li>
-        ))}
-      </ul>
-
-      {firmandoId && (
-        <div style={{ marginTop: 20 }}>
-          <h3>Firma del cliente:</h3>
-          <canvas
-            ref={canvasRef}
-            width={300}
-            height={150}
-            style={{ border: "1px solid black", background: "#fff" }}
-          ></canvas>
-          <br />
-          <button onClick={guardarFirma}>Guardar firma y completar</button>
+          </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }
