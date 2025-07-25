@@ -1,11 +1,15 @@
-import React from 'react';
+// src/App.js
+import { useState } from 'react';
+import Login from './Login';
 import OrdenesApp from './OrdenesApp';
 
 function App() {
-  return (
-    <div>
-      <OrdenesApp />
-    </div>
+  const [usuario, setUsuario] = useState(null);
+
+  return usuario ? (
+    <OrdenesApp usuario={usuario} />
+  ) : (
+    <Login onLogin={setUsuario} />
   );
 }
 
