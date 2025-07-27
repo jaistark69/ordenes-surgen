@@ -1,5 +1,5 @@
 // src/OrdenesApp.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import {
   collection,
@@ -25,7 +25,7 @@ function OrdenesApp({ usuario }) {
 
   const [firmandoId, setFirmandoId] = useState(null);
 
-  // Cargar órdenes en tiempo real
+  // Cargar órdenes desde Firestore en tiempo real
   useEffect(() => {
     const ref = collection(db, 'ordenes');
     const unsubscribe = onSnapshot(ref, (snapshot) => {
@@ -38,7 +38,7 @@ function OrdenesApp({ usuario }) {
     return unsubscribe;
   }, []);
 
-  // Agregar nueva orden
+  // Agregar una nueva orden
   const agregar = async () => {
     if (!nueva.cliente || !nueva.direccion || !nueva.telefono || !nueva.fecha) {
       alert('Faltan datos obligatorios');
@@ -59,10 +59,19 @@ function OrdenesApp({ usuario }) {
 
   return (
     <div style={{ padding: '20px', maxWidth: '700px', margin: 'auto' }}>
-      <h2>Gestión de Órdenes - Surgen</h2>
+      <h2 style={{ color: '#fff', textShadow: '1px 1px 4px #000' }}>
+        Gestión de Órdenes - Surgen
+      </h2>
 
-      {/* Formulario nueva orden */}
-      <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Formulario */}
+      <div
+        style={{
+          marginBottom: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+        }}
+      >
         <input
           type="text"
           placeholder="Cliente"
@@ -98,7 +107,18 @@ function OrdenesApp({ usuario }) {
 
       {/* Lista de órdenes */}
       {ordenes.map((orden) => (
-        <div key={orden.id} style={{ marginBottom: '30px', padding: '15px', border: '1px solid #ccc', borderRadius: '10px' }}>
+        <div
+          key={orden.id}
+          style={{
+            marginBottom: '30px',
+            padding: '15px',
+            borderRadius: '10px',
+            backgroundColor: 'rgba(255, 255, 255, 0.92)',
+            color: '#000',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+            backdropFilter: 'blur(2px)',
+          }}
+        >
           <p><strong>Cliente:</strong> {orden.cliente}</p>
           <p><strong>Dirección:</strong> {orden.direccion}</p>
           <p><strong>Teléfono:</strong> {orden.telefono}</p>
@@ -117,7 +137,11 @@ function OrdenesApp({ usuario }) {
             {orden.firma ? (
               <>
                 <p><strong>Firma guardada:</strong></p>
-                <img src={orden.firma} alt="Firma del cliente" style={{ border: '1px solid #aaa', maxWidth: '100%' }} />
+                <img
+                  src={orden.firma}
+                  alt="Firma del cliente"
+                  style={{ border: '1px solid #aaa', maxWidth: '100%' }}
+                />
               </>
             ) : (
               <>
@@ -132,7 +156,9 @@ function OrdenesApp({ usuario }) {
                     }}
                   />
                 ) : (
-                  <button onClick={() => setFirmandoId(orden.id)}>Firmar orden</button>
+                  <button onClick={() => setFirmandoId(orden.id)}>
+                    Firmar orden
+                  </button>
                 )}
               </>
             )}
